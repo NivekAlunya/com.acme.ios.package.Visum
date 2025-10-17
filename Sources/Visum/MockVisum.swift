@@ -5,6 +5,8 @@
 //  Created by Kevin Launay on 17/10/2025.
 //
 
+import UIKit
+import CoreGraphics
 
 public actor MockVisum: VisumProtocol {
     
@@ -33,9 +35,8 @@ public actor MockVisum: VisumProtocol {
         return detectResult
     }
     
-    public func contour(image: UIImage) async throws -> [CGPath] {
-        if shouldThrowError { throw errorToThrow }
-        return contourResult
+    nonisolated public func contour(image: UIImage) async throws -> [CGPath] {
+        return [CGPath]()
     }
     
     public func detectArea(image: UIImage) async throws -> UIImage? {
