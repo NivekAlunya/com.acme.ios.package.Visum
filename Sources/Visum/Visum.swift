@@ -150,8 +150,6 @@ public actor Visum: VisumProtocol {
             []
         }
 
-        let context = CIContext()
-
         var size = CGSize(width: 448, height: 448)
 
         guard let pixelBuffer = image.toCVPixelBuffer(targetSize: size) else {
