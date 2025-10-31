@@ -180,10 +180,11 @@ public actor Visum: VisumProtocol {
 
         for uniqueLabelIndex in uniqueLabelIndices {
             let mask = await maskToUIImage(array: shapes, palette: palette, selectedMask: Int(uniqueLabelIndex))
-            if let image = mask?.resize(size: image.size) {
-                results.append(image)
+            if let resizedMask = mask?.resize(size: image.size) {
+                results.append(resizedMask)
+            } else if let mask = mask {
+                results.append(mask)
             }
-            results.append(image)
         }
 
         return results
