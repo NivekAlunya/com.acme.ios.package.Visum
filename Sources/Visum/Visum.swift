@@ -156,7 +156,7 @@ public actor Visum: VisumProtocol {
             throw VisumError.failed
         }
 
-        let palette = [UIColor.red, UIColor.yellow, UIColor.green, UIColor.blue, UIColor.systemPink, UIColor.cyan, UIColor.magenta, UIColor.gray, ]
+        let palette = [UIColor.red, UIColor.yellow, UIColor.green, UIColor.blue, UIColor.systemPink, UIColor.cyan, UIColor.magenta, UIColor.gray]
 
         let input = DETRResnet50SemanticSegmentationF16P8Input(image: pixelBuffer)
         var options = MLPredictionOptions()
