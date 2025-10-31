@@ -103,7 +103,6 @@ public actor Visum: VisumProtocol {
             var request = DetectContoursRequest()
             request.contrastAdjustment = 2.0
             request.detectsDarkOnLight = false
-            print(image.imageOrientation)
 
             let contours = try await request.perform(on: ciImage, orientation: getOrientation(from: image))
             return [contours.normalizedPath]
