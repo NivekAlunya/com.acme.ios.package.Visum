@@ -71,7 +71,6 @@ public actor Visum: VisumProtocol {
 
                     let values = results.flatMap { result in
                         result.labels.compactMap { (observation) -> CGRect? in
-                            print("\(observation.identifier) | \(observation.confidence)")
                             guard observation.confidence > 0.2 else {
                                 return nil
                             }
@@ -161,7 +160,6 @@ public actor Visum: VisumProtocol {
         let input = DETRResnet50SemanticSegmentationF16P8Input(image: pixelBuffer)
         var options = MLPredictionOptions()
         let output: DETRResnet50SemanticSegmentationF16P8Output = try await model.prediction(input: input, options: options)
-        print(options.outputBackings.debugDescription)
         let predictions = output.semanticPredictionsShapedArray
 
         let uniqueLabelIndices = Set(predictions.scalars).sorted()
@@ -400,7 +398,6 @@ public actor Visum: VisumProtocol {
                 }
                 try handler.perform([request])
             } catch {
-                print(error.localizedDescription)
                 continuation.resume(throwing: VisumError.failed)
             }
         }
