@@ -1,6 +1,6 @@
 //
 //  UIImage+extensions.swift
-//  Visus
+//  Visum
 //
 //  Created by Kevin Launay on 01/10/2025.
 //
