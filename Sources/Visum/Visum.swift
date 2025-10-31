@@ -412,7 +412,7 @@ public actor Visum: VisumProtocol {
                 try handler.perform([request])
             } catch {
                 print(error.localizedDescription)
-//                continuation.resume(throwing: VisumError.failed)
+                continuation.resume(throwing: VisumError.failed)
             }
         }
     }
