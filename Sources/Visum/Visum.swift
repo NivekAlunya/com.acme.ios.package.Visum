@@ -74,7 +74,10 @@ public actor Visum: VisumProtocol {
                             guard observation.confidence > 0.2 else {
                                 return nil
                             }
-                            return result.boundingBox
+                            let confidence = observation.confidence
+                            let boundedBox = result.boundingBox
+                            //return "\(observation.identifier) | \(confidence) | \(boundedBox)"
+                            return boundedBox
                         }
                     }
 
@@ -160,6 +163,9 @@ public actor Visum: VisumProtocol {
         let predictions = output.semanticPredictionsShapedArray
 
         let uniqueLabelIndices = Set(predictions.scalars).sorted()
+
+        // Map the label indices to label names.
+        let predictedLabels = uniqueLabelIndices.map({ labels[Int($0)] })
 
         let shapes = output.semanticPredictionsShapedArray
 
