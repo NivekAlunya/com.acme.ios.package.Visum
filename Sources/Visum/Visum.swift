@@ -82,7 +82,6 @@ public actor Visum: VisumProtocol {
                         }
                     }
 
-                    print("Type of values: \(type(of: values))")  // This will show the actual type
 
                     continuation.resume(returning: values)
                 }
