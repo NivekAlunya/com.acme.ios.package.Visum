@@ -329,28 +329,20 @@ public actor Visum: VisumProtocol {
     func getOrientation(from uiImage: UIImage) -> CGImagePropertyOrientation {
         switch uiImage.imageOrientation {
         case .up:
-            print("orientation uiimage up")
             return .downMirrored
         case .down:
-            print("orientation uiimage down")
             return .upMirrored
         case .left:
-            print("orientation uiimage left")
             return .leftMirrored
         case .right:
-            print("orientation uiimage right")
             return .rightMirrored
         case .upMirrored:
-            print("orientation uiimage upMirrored")
             return .upMirrored
         case .downMirrored:
-            print("orientation uiimage downMirrored")
             return .downMirrored
         case .leftMirrored:
-            print("orientation uiimage leftMirrored")
             return .leftMirrored
         case .rightMirrored:
-            print("orientation uiimage rightMirrored")
             return .rightMirrored
         @unknown default:
             return .up
