@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import Vision
 
 public protocol VisumProtocol: Actor {
     func analyze(image: UIImage) async throws -> [String]
@@ -16,6 +17,6 @@ public protocol VisumProtocol: Actor {
     func detectSemanticArea(image: UIImage) async throws -> [UIImage]
     func fastDetect(image: UIImage) async throws -> [String]
     func classify(image: UIImage) async throws -> [String]
-    func scan(image: UIImage) async throws -> [String]
-    func scanBarcode<T: BarcodeScannableImage>(image: T) async throws -> [String]
+    func scanText(image: UIImage) async throws -> [String]
+    func scanCode<T: BarcodeScannableImage>(image: T, symbologies: [VNBarcodeSymbology]) async throws -> [String]
 }
