@@ -60,7 +60,7 @@ public actor Visum: VisumProtocol {
             do {
                 let model = try VNCoreMLModel(for: YOLOv3(configuration: config).model)
                 // Create a handler to perform the request
-
+                
                 let handler = VNImageRequestHandler(cgImage: image.cgImage!, orientation: getOrientation(from: image), options: [:])
 
                 let request = VNCoreMLRequest(model: model) { request, error in
@@ -76,7 +76,6 @@ public actor Visum: VisumProtocol {
                             }
                             let confidence = observation.confidence
                             let boundedBox = result.boundingBox
-                            //return "\(observation.identifier) | \(confidence) | \(boundedBox)"
                             return boundedBox
                         }
                     }
@@ -242,7 +241,7 @@ public actor Visum: VisumProtocol {
         let model = try Resnet50(configuration: config)
 
         var size = CGSize(width: 224, height: 224)
-
+        
         guard let pixelBuffer = image.toCVPixelBuffer(targetSize: size) else {
             throw VisumError.failed
         }
@@ -344,13 +343,10 @@ public actor Visum: VisumProtocol {
         }
     }
 
-    public func scan(image: UIImage) async throws -> [String] {
+    public func scanText<T: BarcodeScannableImage>(image: T) async throws -> [String] {
 
         return try await withCheckedThrowingContinuation { continuation in
             do {
-
-                let handler = VNImageRequestHandler(cgImage: image.cgImage!, options: [:])
-
                 let request = VNRecognizeTextRequest { request, error in
                     if let error {
                         continuation.resume(throwing: error)
@@ -368,26 +364,24 @@ public actor Visum: VisumProtocol {
                     continuation.resume(returning: values)
                 }
                 request.recognitionLevel = .accurate
-                try handler.perform([request])
+                try executeRequest(image: image, request: request)
             } catch {
                 continuation.resume(throwing: VisumError.failed)
             }
         }
     }
-
-    public func scanBarcode<T: BarcodeScannableImage>(image: T) async throws -> [String] {
-
+    
+    public func scanCode<T: BarcodeScannableImage>(image: T, symbologies: [VNBarcodeSymbology]) async throws -> [String] {
         return try await withCheckedThrowingContinuation { continuation in
             do {
-                let handler = try image.createRequestHandler(options: [:])
-
                 let request = VNDetectBarcodesRequest { request, error in
                     if let error {
-                        continuation.resume(throwing: VisumError.noResults)
+                        continuation.resume(throwing: error)
                         return
                     }
+
                     guard let results = request.results as? [VNBarcodeObservation] else {
-                        continuation.resume(returning: [])
+                        continuation.resume(throwing: VisumError.noResults)
                         return
                     }
 
@@ -396,11 +390,17 @@ public actor Visum: VisumProtocol {
                     }
                     continuation.resume(returning: values)
                 }
-                try handler.perform([request])
+                request.symbologies = symbologies
+                try executeRequest(image: image, request: request)
             } catch {
                 continuation.resume(throwing: VisumError.failed)
             }
         }
+    }
+    
+    private func executeRequest<T: BarcodeScannableImage>(image: T, orientation: CGImagePropertyOrientation? = nil, request: VNRequest) throws {
+        let handler = try image.createRequestHandler(orientation: orientation, options: [:])
+        try handler.perform([request])
     }
 
 }
@@ -436,28 +436,41 @@ extension MLShapedArray where Scalar: Hashable & Comparable {
 
 
 extension UIImage: BarcodeScannableImage {
-    public func createRequestHandler(options: [VNImageOption : Any]) throws -> VNImageRequestHandler {
+    public func createRequestHandler(orientation: CGImagePropertyOrientation? = nil, options: [VNImageOption : Any]) throws -> VNImageRequestHandler {
         guard let cgImage = self.cgImage else {
             throw Visum.VisumError.failed
         }
+        if let orientation = orientation {
+            return VNImageRequestHandler(cgImage: cgImage, orientation: orientation, options: options)
+        }
         return VNImageRequestHandler(cgImage: cgImage, options: options)
+
     }
 }
 
 extension CIImage: BarcodeScannableImage {
-    public func createRequestHandler(options: [VNImageOption : Any]) throws -> VNImageRequestHandler {
+    public func createRequestHandler(orientation: CGImagePropertyOrientation? = nil, options: [VNImageOption : Any]) throws -> VNImageRequestHandler {
+        if let orientation = orientation {
+            return VNImageRequestHandler(ciImage: self, orientation: orientation, options: options)
+        }
         return VNImageRequestHandler(ciImage: self, options: options)
     }
 }
 
 extension CGImage: BarcodeScannableImage {
-    public func createRequestHandler(options: [VNImageOption : Any]) throws -> VNImageRequestHandler {
+    public func createRequestHandler(orientation: CGImagePropertyOrientation? = nil, options: [VNImageOption : Any]) throws -> VNImageRequestHandler {
+        if let orientation = orientation {
+            return VNImageRequestHandler(cgImage: self, orientation: orientation, options: options)
+        }
         return VNImageRequestHandler(cgImage: self, options: options)
     }
 }
 
 extension CVPixelBuffer: BarcodeScannableImage {
-    public func createRequestHandler(options: [VNImageOption : Any]) throws -> VNImageRequestHandler {
+    public func createRequestHandler(orientation: CGImagePropertyOrientation? = nil, options: [VNImageOption : Any]) throws -> VNImageRequestHandler {
+        if let orientation = orientation {
+            return VNImageRequestHandler(cvPixelBuffer: self, orientation: orientation, options: options)
+        }
         return VNImageRequestHandler(cvPixelBuffer: self, options: options)
     }
 }

@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreGraphics
+import Vision
 
 public actor MockVisum: VisumProtocol {
     
@@ -59,12 +60,11 @@ public actor MockVisum: VisumProtocol {
         return classifyResult
     }
     
-    public func scan(image: UIImage) async throws -> [String] {
+    public func scanText<T>(image: T) async throws -> [String] {
         if shouldThrowError { throw errorToThrow }
         return scanResult
     }
-    
-    public func scanBarcode<T: BarcodeScannableImage>(image: T) async throws -> [String] {
+    public func scanCode<T>(image: T, symbologies: [VNBarcodeSymbology]) async throws -> [String] where T : BarcodeScannableImage {
         if shouldThrowError { throw errorToThrow }
         return scanBarcodeResult
     }

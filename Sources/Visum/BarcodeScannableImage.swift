@@ -9,5 +9,5 @@ import Vision
 
 // Protocol to constrain acceptable image types and generate handlers
 public protocol BarcodeScannableImage {
-    func createRequestHandler(options: [VNImageOption : Any]) throws -> VNImageRequestHandler
+    func createRequestHandler(orientation: CGImagePropertyOrientation?, options: [VNImageOption : Any]) throws -> VNImageRequestHandler
 }
