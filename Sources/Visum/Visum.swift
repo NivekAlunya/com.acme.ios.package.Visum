@@ -76,7 +76,6 @@ public actor Visum: VisumProtocol {
                             }
                             let confidence = observation.confidence
                             let boundedBox = result.boundingBox
-                            //return "\(observation.identifier) | \(confidence) | \(boundedBox)"
                             return boundedBox
                         }
                     }
@@ -243,9 +242,6 @@ public actor Visum: VisumProtocol {
 
         var size = CGSize(width: 224, height: 224)
         
-        //convert image ti bytes array
-        
-        
         guard let pixelBuffer = image.toCVPixelBuffer(targetSize: size) else {
             throw VisumError.failed
         }
@@ -402,7 +398,7 @@ public actor Visum: VisumProtocol {
         }
     }
     
-    private func executeRequest<T: BarcodeScannableImage>(image: T ,orientation: CGImagePropertyOrientation? = nil,  request: VNRequest) throws {
+    private func executeRequest<T: BarcodeScannableImage>(image: T, orientation: CGImagePropertyOrientation? = nil, request: VNRequest) throws {
         let handler = try image.createRequestHandler(orientation: orientation, options: [:])
         try handler.perform([request])
     }
