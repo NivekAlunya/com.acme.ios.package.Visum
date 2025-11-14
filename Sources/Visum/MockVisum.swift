@@ -60,7 +60,7 @@ public actor MockVisum: VisumProtocol {
         return classifyResult
     }
     
-    public func scanText(image: UIImage) async throws -> [String] {
+    public func scanText<T>(image: T) async throws -> [String] {
         if shouldThrowError { throw errorToThrow }
         return scanResult
     }
