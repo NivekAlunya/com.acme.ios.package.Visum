@@ -9,10 +9,10 @@ import Foundation
 import UIKit
 import Vision
 
-public protocol VisumProtocol: Actor {
+public protocol VisumProtocol: Sendable {
     func analyze(image: UIImage) async throws -> [String]
     func detect(image: UIImage) async throws -> [CGRect]
-    nonisolated func contour(image: UIImage) async throws -> [CGPath]
+    func contour(image: UIImage) async throws -> [CGPath]
     func detectArea(image: UIImage) async throws -> UIImage?
     func detectSemanticArea(image: UIImage) async throws -> [UIImage]
     func fastDetect(image: UIImage) async throws -> [String]
