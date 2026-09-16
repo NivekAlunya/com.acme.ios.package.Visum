@@ -5,17 +5,27 @@ import CoreML
 @preconcurrency import Vision
 @preconcurrency import UIKit
 
+/// Actor providing computer vision, machine learning classification, object detection, and contour analysis.
 public actor Visum: VisumProtocol {
 
-    enum VisumError : Error {
+    /// Errors produced during Vision and CoreML request executions.
+    public enum VisumError: Error, Sendable {
         case noResults
         case failed
     }
 
     public static let shared = Visum()
 
-    private init() {
+    private init() {}
 
+    private func safeCGImage(from image: UIImage) -> CGImage? {
+        if let cgImage = image.cgImage {
+            return cgImage
+        }
+        if let ciImage = image.ciImage ?? CIImage(image: image) {
+            return CIContext().createCGImage(ciImage, from: ciImage.extent)
+        }
+        return nil
     }
 
     public func analyze(image: UIImage) async throws -> [String] {
@@ -27,9 +37,14 @@ public actor Visum: VisumProtocol {
                 config.computeUnits = .all
                 config.allowLowPrecisionAccumulationOnGPU = true
 
+                guard let cgImage = safeCGImage(from: image) else {
+                    continuation.resume(throwing: VisumError.failed)
+                    return
+                }
+
                 let model = try VNCoreMLModel(for: MobileNetV2(configuration: config).model)
                 // Create a handler to perform the request
-                let handler = VNImageRequestHandler(cgImage: image.cgImage!, options: [:])
+                let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
 
                 let request = VNCoreMLRequest(model: model) { request, error in
                     guard let results = request.results as? [VNClassificationObservation] else {
@@ -58,10 +73,15 @@ public actor Visum: VisumProtocol {
             config.computeUnits = .all
             config.allowLowPrecisionAccumulationOnGPU = true
             do {
+                guard let cgImage = safeCGImage(from: image) else {
+                    continuation.resume(throwing: VisumError.failed)
+                    return
+                }
+
                 let model = try VNCoreMLModel(for: YOLOv3(configuration: config).model)
                 // Create a handler to perform the request
                 
-                let handler = VNImageRequestHandler(cgImage: image.cgImage!, orientation: getOrientation(from: image), options: [:])
+                let handler = VNImageRequestHandler(cgImage: cgImage, orientation: getOrientation(from: image), options: [:])
 
                 let request = VNCoreMLRequest(model: model) { request, error in
                     guard let results = request.results as? [VNRecognizedObjectObservation] else {
@@ -323,13 +343,13 @@ public actor Visum: VisumProtocol {
     func getOrientation(from uiImage: UIImage) -> CGImagePropertyOrientation {
         switch uiImage.imageOrientation {
         case .up:
-            return .downMirrored
+            return .up
         case .down:
-            return .upMirrored
+            return .down
         case .left:
-            return .leftMirrored
+            return .left
         case .right:
-            return .rightMirrored
+            return .right
         case .upMirrored:
             return .upMirrored
         case .downMirrored:
@@ -405,10 +425,17 @@ public actor Visum: VisumProtocol {
 
 }
 
-public struct DetectionResult {
-    let boundingBox: CGRect
-    let confidence: Float
-    let label: String
+/// Result of an object detection observation including bounding box, label, and confidence score.
+public struct DetectionResult: Sendable, Equatable {
+    public let boundingBox: CGRect
+    public let confidence: Float
+    public let label: String
+
+    public init(boundingBox: CGRect, confidence: Float, label: String) {
+        self.boundingBox = boundingBox
+        self.confidence = confidence
+        self.label = label
+    }
 }
 
 

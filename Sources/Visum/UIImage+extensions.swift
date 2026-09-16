@@ -34,6 +34,9 @@ extension UIImage {
         }
         
         CVPixelBufferLockBaseAddress(buffer, CVPixelBufferLockFlags(rawValue: 0))
+        defer {
+            CVPixelBufferUnlockBaseAddress(buffer, CVPixelBufferLockFlags(rawValue: 0))
+        }
         let pixelData = CVPixelBufferGetBaseAddress(buffer)
         
         let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
@@ -55,17 +58,15 @@ extension UIImage {
         UIGraphicsPushContext(context)
         resizedImage.draw(in: CGRect(x: 0, y: 0, width: targetSize.width, height: targetSize.height))
         UIGraphicsPopContext()
-        CVPixelBufferUnlockBaseAddress(buffer, CVPixelBufferLockFlags(rawValue: 0))
         
         return buffer
     }
     
     func resized(to size: CGSize) -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
-        defer { UIGraphicsEndImageContext() }
-        
-        draw(in: CGRect(origin: .zero, size: size))
-        return UIGraphicsGetImageFromCurrentImageContext()
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { _ in
+            self.draw(in: CGRect(origin: .zero, size: size))
+        }
     }
 
     func resize(size targetSize: CGSize) -> UIImage {
